@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>自分の時間をどう使ってる？</title>
+<style>
+:root{
+  --bg:#f3f6f4;--card:#fff;--ink:#1d2a2a;--sub:#66777a;--line:#dbe4e1;
+  --dig:#3b6fd4;--ana:#e08a2c;--field:#f7faf9;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){--bg:#121917;--card:#1b2523;--ink:#e8f0ee;--sub:#93a6a3;--line:#2c3a37;--dig:#6c9cf0;--ana:#f0a850;--field:#152020;color-scheme:dark}
+}
+:root[data-theme="dark"]{--bg:#121917;--card:#1b2523;--ink:#e8f0ee;--sub:#93a6a3;--line:#2c3a37;--dig:#6c9cf0;--ana:#f0a850;--field:#152020;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic",Meiryo,sans-serif;line-height:1.6}
+main{max-width:520px;margin:0 auto;padding:16px 14px 40px}
+h1{font-size:1.35rem;margin:4px 0 14px;text-align:center;letter-spacing:.02em}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px}
+.nav{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:10px}
+.nav button{border:1px solid var(--line);background:var(--field);color:var(--ink);border-radius:10px;padding:8px 12px;font:inherit;font-size:.85rem;cursor:pointer}
+.range{font-weight:700;font-size:.95rem;text-align:center;white-space:nowrap}
+.pie{display:flex;justify-content:center;margin:10px 0 4px}
+.pie svg{width:min(250px,72vw);height:auto}
+.legend{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;font-size:.85rem}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+.legend small{color:var(--sub)}
+.note{text-align:center;color:var(--sub);font-size:.75rem;margin:6px 0 0}
+.days{margin-top:16px;display:grid;gap:10px}
+details{background:var(--card);border:1px solid var(--line);border-radius:14px}
+summary{cursor:pointer;padding:12px 14px;font-weight:700;display:flex;justify-content:space-between;align-items:center;gap:8px;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary span.t{font-weight:400;font-size:.72rem;color:var(--sub);text-align:right}
+.badge{font-size:.68rem;background:var(--dig);color:#fff;border-radius:99px;padding:1px 8px;margin-left:6px;font-weight:400}
+.body{padding:0 14px 14px}
+h3{margin:12px 0 6px;font-size:.95rem;display:flex;align-items:center;justify-content:space-between}
+h3.d{color:var(--dig)}h3.a{color:var(--ana)}
+.add{width:30px;height:30px;border-radius:50%;border:1.5px solid currentColor;background:none;color:inherit;font-size:1.1rem;line-height:1;cursor:pointer}
+.row{display:grid;grid-template-columns:1fr auto;gap:6px;align-items:center;margin-bottom:8px}
+.row .tm{display:flex;align-items:center;gap:4px;grid-column:1/3}
+input{font:inherit;font-size:.9rem;color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:8px;padding:6px 8px;min-width:0}
+input[type=text]{width:100%}
+input[type=time]{flex:1}
+.del{border:0;background:none;color:var(--sub);font-size:1.1rem;cursor:pointer;padding:0 4px}
+.plan{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:12px;font-size:.9rem}
+.plan input{width:29px;padding:6px 3px;text-align:center;-moz-appearance:textfield;appearance:textfield}
+.plan input::-webkit-outer-spin-button,.plan input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.eval{margin:12px 0 0;padding:10px 12px;border-radius:10px;background:var(--field);border:1px solid var(--line);text-align:center;font-weight:700;font-size:.92rem}
+.eval.hint{font-weight:400;color:var(--sub);font-size:.8rem}
+.cm{display:block;margin-top:12px;font-size:.85rem;font-weight:700}
+textarea{display:block;width:100%;margin-top:6px;min-height:78px;resize:vertical;font:inherit;font-size:.9rem;color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:8px;padding:8px}
+button:focus-visible,summary:focus-visible{outline:2px solid var(--dig);outline-offset:2px}
+</style>
+</head>
+<body>
+<main>
+  <h1>自分の時間をどう使ってる？</h1>
+  <section class="card" aria-label="今週の割合">
+    <div class="range" id="range"></div>
+    <div class="nav">
+      <button id="prev">‹ 前週</button>
+      <button id="today">今週</button>
+      <button id="next">翌週 ›</button>
+    </div>
+    <div class="plan">計画：デジタル時間 <input type="number" id="planH" min="0" max="23" inputmode="numeric" aria-label="時間"> 時間 <input type="number" id="planM" min="0" max="59" inputmode="numeric" aria-label="分"> 分／日</div>
+    <div class="pie" id="pie"></div>
+    <div class="legend" id="legend"></div>
+    <p class="note">自由時間のうち、デジタル／アナログの割合（一週間）</p>
+    <div class="eval" id="eval"></div>
+    <div class="eval" id="eval2"></div>
+    <p class="note" id="rate"></p>
+    <label class="cm" for="comment">翌週に向けてのコメント</label>
+    <textarea id="comment" placeholder="今週の振り返りや、翌週したいことを書こう"></textarea>
+  </section>
+  <section class="days" id="days"></section>
+</main>
+<script>
+const WD=['日','月','火','水','木','金','土'];
+const K='jikan-v1';
+let data={};
+try{data=JSON.parse(localStorage.getItem(K)||'{}')}catch(e){data={}}
+const save=()=>{try{localStorage.setItem(K,JSON.stringify(data))}catch(e){}};
+const sunday=d=>{const x=new Date(d.getFullYear(),d.getMonth(),d.getDate());x.setDate(x.getDate()-x.getDay());return x};
+const key=d=>d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+let cur=sunday(new Date());
+const open=new Set([new Date().getDay()]);
+const blank=()=>Array.from({length:7},()=>({
+  dig:['スマホ',''].map(l=>({l,s:'',e:''})),
+  ana:[1].map(()=>({l:'',s:'',e:''}))
+}));
+const week=()=>{const k=key(cur);if(!data[k])data[k]=blank();
+  data[k].forEach(d=>{d.dig=d.dig.filter((x,i)=>i===0||x.s||x.e||(x.l&&!['ゲーム','テレビ','その他'].includes(x.l)));
+    if(d.dig.length<2)d.dig.push({l:'',s:'',e:''});
+    while(d.ana.length>1&&!d.ana[d.ana.length-1].l&&!d.ana[d.ana.length-1].s&&!d.ana[d.ana.length-1].e)d.ana.pop()});
+  return data[k]};
+const mins=(s,e)=>{if(!s||!e)return 0;const a=s.split(':'),b=e.split(':');let d=(+b[0]*60+ +b[1])-(+a[0]*60+ +a[1]);if(d<0)d+=1440;return d};
+const fmt=m=>m>=60?Math.floor(m/60)+'時間'+(m%60?m%60+'分':''):m+'分';
+const sum=l=>l.reduce((t,x)=>t+mins(x.s,x.e),0);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const md=d=>(d.getMonth()+1)+'月'+d.getDate()+'日';
+const plus=i=>{const d=new Date(cur);d.setDate(d.getDate()+i);return d};
+
+function rows(list,g,di,ph){
+  return list.map((x,i)=>`<div class="row">
+    <input type="text" value="${esc(x.l)}" placeholder="${ph}" ${g==='dig'&&i<1?'readonly':''} data-d="${di}" data-g="${g}" data-i="${i}" data-f="l" aria-label="項目名">
+    <button class="del" data-del="${g}" data-d="${di}" data-i="${i}" aria-label="削除">×</button>
+    <div class="tm"><input type="time" value="${x.s}" data-d="${di}" data-g="${g}" data-i="${i}" data-f="s" aria-label="開始"><span>〜</span><input type="time" value="${x.e}" data-d="${di}" data-g="${g}" data-i="${i}" data-f="e" aria-label="終了"></div>
+  </div>`).join('');
+}
+function render(){
+  const w=week();
+  const a=plus(0),b=plus(6);
+  document.getElementById('range').textContent=a.getFullYear()+'年'+md(a)+'（日）〜'+(a.getFullYear()!==b.getFullYear()?b.getFullYear()+'年':'')+md(b)+'（土）';
+  const now=new Date();
+  document.getElementById('days').innerHTML=w.map((day,i)=>{
+    const d=plus(i),isT=key(d)===key(now);
+    return `<details data-day="${i}" ${open.has(i)?'open':''}>
+      <summary><div>${md(d)}（${WD[i]}）${isT?'<span class="badge">今日</span>':''}</div><span class="t" id="t${i}"></span></summary>
+      <div class="body">
+        <h3 class="d">デジタル時間<button class="add" data-add="dig" data-d="${i}" aria-label="デジタル項目を追加">＋</button></h3>
+        ${rows(day.dig,'dig',i,'自由記入（例：ゲーム）')}
+        <h3 class="a">アナログ時間<button class="add" data-add="ana" data-d="${i}" aria-label="アナログ項目を追加">＋</button></h3>
+        ${rows(day.ana,'ana',i,'自由記入（例：読書）')}
+      </div></details>`;
+  }).join('');
+  const m=meta();
+  document.getElementById('planH').value=m.h;
+  document.getElementById('planM').value=m.m;
+  document.getElementById('comment').value=m.c;
+  update();
+}
+function pie(d,a){
+  const t=d+a;
+  if(!t)return `<svg viewBox="0 0 200 200" role="img" aria-label="データなし"><circle cx="100" cy="100" r="90" fill="none" stroke="var(--line)" stroke-width="2"/><text x="100" y="106" text-anchor="middle" fill="var(--sub)" font-size="14">まだ入力がありません</text></svg>`;
+  const pd=Math.round(d/t*100),pa=100-pd;
+  const R=90,C=100;
+  const pt=(f,r=R)=>[C+r*Math.sin(f*2*Math.PI),C-r*Math.cos(f*2*Math.PI)];
+  const fd=d/t;
+  const lab=(f0,f1,p,txt)=>{if(p<6)return'';const [x,y]=pt((f0+f1)/2,58);return `<text x="${x}" y="${y+5}" text-anchor="middle" fill="#fff" font-size="16" font-weight="700">${txt}%</text>`};
+  if(!d||!a){
+    return `<svg viewBox="0 0 200 200" role="img" aria-label="円グラフ"><circle cx="100" cy="100" r="90" fill="${d?'var(--dig)':'var(--ana)'}"/><text x="100" y="108" text-anchor="middle" fill="#fff" font-size="22" font-weight="700">100%</text></svg>`;
+  }
+  const [x,y]=pt(fd);
+  const big1=fd>.5?1:0,big2=fd<.5?1:0;
+  return `<svg viewBox="0 0 200 200" role="img" aria-label="デジタル${pd}%、アナログ${pa}%">
+    <path d="M100 100 L100 10 A90 90 0 ${big1} 1 ${x} ${y} Z" fill="var(--dig)"/>
+    <path d="M100 100 L${x} ${y} A90 90 0 ${big2} 1 100 10 Z" fill="var(--ana)"/>
+    ${lab(0,fd,pd,pd)}${lab(fd,1,pa,pa)}</svg>`;
+}
+function update(){
+  const w=week();let D=0,A=0;
+  w.forEach((day,i)=>{
+    const d=sum(day.dig),a=sum(day.ana);D+=d;A+=a;
+    const el=document.getElementById('t'+i);
+    if(el)el.innerHTML=(d||a)?`デジタル${fmt(d)}<br>アナログ${fmt(a)}`:'';
+  });
+  document.getElementById('pie').innerHTML=pie(D,A);
+  evalr(w,D);
+  const t=D+A,pd=t?Math.round(D/t*100):0,pa=t?100-pd:0;
+  document.getElementById('legend').innerHTML=
+    `<span><i style="background:var(--dig)"></i>デジタル ${pd}% <small>(${fmt(D)})</small></span><span><i style="background:var(--ana)"></i>アナログ ${pa}% <small>(${fmt(A)})</small></span>`;
+}
+const meta=()=>{const k='m'+key(cur);if(!data[k])data[k]={h:'',m:'',c:''};return data[k]};
+const WAGES=[['2026-10-01',1177],['2025-10-01',1121]];
+function wage(){
+  const n=new Date(),t=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0');
+  return WAGES.find(x=>x[0]<=t)||WAGES[WAGES.length-1];
+}
+function evalr(w,D){
+  const A=w.reduce((t,d)=>t+sum(d.ana),0),e2=document.getElementById('eval2'),W=wage();
+  e2.className='eval';
+  document.getElementById('rate').textContent='全国の最低賃金平均 '+W[1].toLocaleString('ja-JP')+'円／時間で計算';
+  if(A>0)e2.innerHTML='アナログ時間の使用で<br>'+Math.round(A*W[1]/60).toLocaleString('ja-JP')+'円分、得しました!';
+  else{e2.classList.add('hint');e2.textContent='Remember that time is money.'}
+  const m=meta(),el=document.getElementById('eval');
+  const p=(+m.h||0)*60+(+m.m||0);
+  const n=w.filter(d=>sum(d.dig)+sum(d.ana)>0).length;
+  el.className='eval';
+  if(!p||!n){el.classList.add('hint');el.textContent='計画を入力すると、ここに評価が出ます';return}
+  const diff=p*n-D;
+  el.textContent=diff>0?'デジタル時間を'+fmt(diff)+'、少なく使えています!':diff===0?'計画どおりに使えました!':'デジタル時間が'+fmt(-diff)+'、オーバーしました!';
+}
+[['planH','h'],['planM','m'],['comment','c']].forEach(([id,f])=>{
+  document.getElementById(id).addEventListener('input',e=>{meta()[f]=e.target.value;save();update()});
+});
+document.getElementById('days').addEventListener('input',e=>{
+  const t=e.target,w=week();
+  if(t.dataset.f===undefined)return;
+  w[t.dataset.d][t.dataset.g][t.dataset.i][t.dataset.f]=t.value;
+  save();update();
+});
+document.getElementById('days').addEventListener('click',e=>{
+  const t=e.target.closest('button');if(!t)return;
+  const w=week();
+  if(t.dataset.add){w[t.dataset.d][t.dataset.add].push({l:'',s:'',e:''});open.add(+t.dataset.d);save();render()}
+  else if(t.dataset.del){w[t.dataset.d][t.dataset.del].splice(t.dataset.i,1);save();render()}
+});
+document.getElementById('days').addEventListener('toggle',e=>{
+  const i=+e.target.dataset.day;if(isNaN(i))return;
+  e.target.open?open.add(i):open.delete(i);
+},true);
+const go=n=>{cur.setDate(cur.getDate()+n*7);open.clear();render();window.scrollTo(0,0)};
+document.getElementById('prev').onclick=()=>go(-1);
+document.getElementById('next').onclick=()=>go(1);
+document.getElementById('today').onclick=()=>{cur=sunday(new Date());open.clear();open.add(new Date().getDay());render()};
+let sx=null;
+document.querySelector('section.card').addEventListener('touchstart',e=>{sx=e.touches[0].clientX},{passive:true});
+document.querySelector('section.card').addEventListener('touchend',e=>{
+  if(sx===null)return;const dx=e.changedTouches[0].clientX-sx;sx=null;
+  if(Math.abs(dx)>70)go(dx<0?1:-1);
+});
+render();
+</script>
+</body>
+</html>
