@@ -88,11 +88,12 @@ const key=d=>d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
 let cur=sunday(new Date());
 const open=new Set([new Date().getDay()]);
 const blank=()=>Array.from({length:7},()=>({
-  dig:['スマホ',''].map(l=>({l,s:'',e:''})),
+  dig:['',''].map(l=>({l,s:'',e:''})),
   ana:[1].map(()=>({l:'',s:'',e:''}))
 }));
 const week=()=>{const k=key(cur);if(!data[k])data[k]=blank();
   data[k].forEach(d=>{d.dig=d.dig.filter((x,i)=>i===0||x.s||x.e||(x.l&&!['ゲーム','テレビ','その他'].includes(x.l)));
+    if(d.dig[0]&&d.dig[0].l==='スマホ'&&!d.dig[0].s&&!d.dig[0].e)d.dig[0].l='';
     if(d.dig.length<2)d.dig.push({l:'',s:'',e:''});
     while(d.ana.length>1&&!d.ana[d.ana.length-1].l&&!d.ana[d.ana.length-1].s&&!d.ana[d.ana.length-1].e)d.ana.pop()});
   return data[k]};
@@ -105,7 +106,7 @@ const plus=i=>{const d=new Date(cur);d.setDate(d.getDate()+i);return d};
 
 function rows(list,g,di,ph){
   return list.map((x,i)=>`<div class="row">
-    <input type="text" value="${esc(x.l)}" placeholder="${ph}" ${g==='dig'&&i<1?'readonly':''} data-d="${di}" data-g="${g}" data-i="${i}" data-f="l" aria-label="項目名">
+    <input type="text" value="${esc(x.l)}" placeholder="${g==='dig'&&i===0?'自由記入（例：スマホ）':ph}" data-d="${di}" data-g="${g}" data-i="${i}" data-f="l" aria-label="項目名">
     <button class="del" data-del="${g}" data-d="${di}" data-i="${i}" aria-label="削除">×</button>
     <div class="tm"><input type="time" value="${x.s}" data-d="${di}" data-g="${g}" data-i="${i}" data-f="s" aria-label="開始"><span>〜</span><input type="time" value="${x.e}" data-d="${di}" data-g="${g}" data-i="${i}" data-f="e" aria-label="終了"></div>
   </div>`).join('');
